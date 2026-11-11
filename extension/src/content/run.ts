@@ -2,6 +2,7 @@
 // No chrome.* here: index.ts injects `send`, so this runs under happy-dom in tests.
 import type { PresencePayload } from "../../../plugin/venchrome/protocol.ts";
 import type { ContentToWorker, PreviewResult } from "../messages.ts";
+import { domMediaSnapshot } from "../rules/dommedia.ts";
 import { extractFields } from "../rules/extract.ts";
 import { findRule, pickPage, ruleMatchesHost } from "../rules/match.ts";
 import { buildPresence } from "../rules/presence.ts";
@@ -123,9 +124,9 @@ export function createRunner(win: Window, send: (m: ContentToWorker) => void): C
     function evaluate(r: Rule) {
         requestSession();
         const href = win.location.href;
-        const fields = extractFields(r, doc, href, mediaSnapshot(media, session));
+        const snap = (!media && domMediaSnapshot(r.domMedia, doc, session)) || mediaSnapshot(media, session);
+        const fields = extractFields(r, doc, href, snap);
         const page = pickPage(r, win.location.pathname, fields);
-        const snap = mediaSnapshot(media, session);
         return { fields, page, snap, presence: buildPresence(r, page, fields, snap) };
     }
 

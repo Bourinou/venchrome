@@ -43,6 +43,18 @@ export interface RulePage {
     media?: boolean;
 }
 
+/** Media state read from the DOM, for players without a <video>/<audio> element (e.g. WebAudio). D-014. */
+export interface DomMedia {
+    /** Element present = paused, absent = playing. */
+    pausedSelector: string;
+    /** Progress element; no match = no media state. */
+    progressSelector: string;
+    /** Attribute holding the elapsed seconds. */
+    currentAttr: string;
+    /** Attribute holding the total seconds. */
+    maxAttr: string;
+}
+
 export interface Rule {
     id: string;
     /** Activity name shown on Discord. */
@@ -54,6 +66,8 @@ export interface Rule {
     /** https URL. */
     logo?: string;
     fields: Record<string, FieldSource>;
+    /** Used only when the page has no media element. */
+    domMedia?: DomMedia;
     /** Ordered: first page whose `path` and `when` pass wins. */
     pages: RulePage[];
 }
