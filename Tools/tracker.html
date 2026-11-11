@@ -1,0 +1,94 @@
+<title>Venchrome tracker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: header with overall bar, category tabs (each with its own bar), selected category's plans below */
+:root{--bg:#f6f7f8;--card:#fff;--ink:#1b1f24;--muted:#66707a;--line:#dfe3e7;--accent:#2b6f8f;--done:#2f9e6b;--run:#d98a1c;--sel:#e8f1f5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121518;--card:#1b1f24;--ink:#e8ecef;--muted:#98a2ab;--line:#2c3238;--accent:#6fb3d2;--done:#4cc38a;--run:#f0a640;--sel:#1d2a31;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121518;--card:#1b1f24;--ink:#e8ecef;--muted:#98a2ab;--line:#2c3238;--accent:#6fb3d2;--done:#4cc38a;--run:#f0a640;--sel:#1d2a31;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:920px;margin:0 auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 10px;font-size:13px;font-variant-numeric:tabular-nums}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.bar.big{height:10px;border-radius:5px}
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin:20px 0}
+.cat{all:unset;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:6px;min-width:0}
+.cat:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cat[aria-pressed="true"]{border-color:var(--accent);background:var(--sel)}
+.cat b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat span{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.cat.full .bar i{background:var(--done)}
+.head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:24px 0 6px}
+h2{font-size:17px;margin:0;min-width:0}
+details{background:var(--card);border:1px solid var(--line);border-radius:10px;margin:6px 0}
+summary{list-style:none;cursor:pointer;padding:10px 12px;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary:focus-visible{outline:2px solid var(--accent);border-radius:10px}
+.id{font-weight:600;font-variant-numeric:tabular-nums}
+.t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta{color:var(--muted);font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--line)}
+.running .dot{background:var(--run)}.done .dot{background:var(--done)}
+summary .bar{grid-column:1/-1}
+ul{margin:0;padding:4px 14px 12px;list-style:none}
+li{padding:3px 0;display:flex;gap:8px;font-size:14px}
+li span:last-child{min-width:0;overflow-wrap:anywhere}
+li.ok{color:var(--muted);text-decoration:line-through}
+.empty{color:var(--muted);padding:40px 0;text-align:center}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+<main>
+  <h1>Venchrome</h1>
+  <p class="sub" id="sub">Loading plans…</p>
+  <div class="bar big"><i id="total" style="width:0"></i></div>
+  <div class="cats" id="cats"></div>
+  <div id="panel"></div>
+</main>
+<script>
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct=(a,b)=>b?Math.round(100*a/b):0;
+const opened=new Set();
+let plans=[],selected=null;
+try{selected=localStorage.getItem('cat')}catch(e){}
+function groups(){
+  const m=new Map();
+  for(const p of plans){const k=p.category||'Plans';if(!m.has(k))m.set(k,{name:k,order:p.categoryOrder??999,plans:[]});m.get(k).plans.push(p)}
+  const g=[...m.values()].sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name,undefined,{numeric:true}));
+  for(const c of g){c.plans.sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));c.done=c.plans.filter(p=>p.status==='done').length}
+  return g;
+}
+function select(name){selected=name;try{localStorage.setItem('cat',name)}catch(e){}render()}
+function render(){
+  const panel=document.getElementById('panel'),cats=document.getElementById('cats');
+  panel.querySelectorAll('details[open]').forEach(d=>opened.add(d.dataset.id));
+  if(!plans.length){cats.innerHTML='';panel.innerHTML='<p class="empty">No plans synced yet. Run /plan-generate to add them.</p>';document.getElementById('sub').textContent='';return}
+  const g=groups();
+  const done=plans.filter(p=>p.status==='done').length;
+  const last=plans.map(p=>p.updated||'').sort().pop();
+  document.getElementById('sub').textContent=`${done}/${plans.length} plans done (${pct(done,plans.length)} %)`+(last?` · updated ${new Date(last).toLocaleString()}`:'');
+  document.getElementById('total').style.width=pct(done,plans.length)+'%';
+  if(!g.some(c=>c.name===selected)){const cur=g.find(c=>c.done<c.plans.length);selected=(cur||g[g.length-1]).name}
+  cats.innerHTML=g.map(c=>`<button class="cat${c.done===c.plans.length?' full':''}" aria-pressed="${c.name===selected}" data-cat="${esc(c.name)}">
+    <b title="${esc(c.name)}">${esc(c.name)}</b><span>${c.done}/${c.plans.length} plans</span><div class="bar"><i style="width:${pct(c.done,c.plans.length)}%"></i></div></button>`).join('');
+  cats.querySelectorAll('.cat').forEach(b=>b.onclick=()=>select(b.dataset.cat));
+  const c=g.find(c=>c.name===selected);
+  panel.innerHTML=`<div class="head"><h2>${esc(c.name)}</h2><span class="meta">${c.done}/${c.plans.length} plans · ${pct(c.done,c.plans.length)} %</span></div>
+    <div class="bar big"><i style="width:${pct(c.done,c.plans.length)}%"></i></div>`+
+    c.plans.map(p=>{
+      const items=Array.isArray(p.items)?p.items:[];const n=items.filter(i=>i.done).length;
+      return `<details class="${esc(p.status)}" data-id="${esc(p.id)}"${opened.has(p.id)?' open':''}><summary>
+        <span class="id"><span class="dot"></span>${esc(p.id)}</span><span class="t" title="${esc(p.title)}">${esc(p.title)}${p.human?' 🧑':''}</span>
+        <span class="meta">${p.model?esc(p.model)+' · ':''}${n}/${items.length}</span><div class="bar"><i style="width:${pct(n,items.length)}%"></i></div></summary>
+        <ul>${items.map(i=>`<li class="${i.done?'ok':''}"><span>${i.done?'☑':'☐'}</span><span>${esc(i.text)}</span></li>`).join('')}</ul></details>`}).join('');
+}
+(async()=>{
+  const sub=document.getElementById('sub');
+  const timer=setTimeout(()=>{sub.textContent='Plans could not load. Open this page signed in to claude.ai.'},10000);
+  const db=await claude.use('db');
+  if(!db){clearTimeout(timer);sub.textContent='Plans are not available in this view.';return}
+  db.collection('plans').onSnapshot(s=>{clearTimeout(timer);plans=s.docs.map(d=>({id:d.id,...d.data()}));render()},
+    e=>{clearTimeout(timer);sub.textContent='Could not load plans: '+(e&&e.message||e)});
+})();
+</script>
