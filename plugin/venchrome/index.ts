@@ -50,7 +50,7 @@ const throttle = createThrottle<RendererUpdate>(u => {
 export default definePlugin({
     name: "Venchrome",
     description: "Shows your Chrome activity on configured sites as a Discord Rich Presence",
-    authors: [{ name: "Bourinou", id: 0n }],
+    authors: [{ name: "Bourinou", id: 306785764476190720n }],
     settings,
 
     /** Called from native.ts through executeJavaScript. */
