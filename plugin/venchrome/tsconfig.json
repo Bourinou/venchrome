@@ -1,0 +1,4 @@
+{
+    "extends": "../../../Vencord Installation/Vencord/tsconfig.json",
+    "include": ["./**/*"]
+}
