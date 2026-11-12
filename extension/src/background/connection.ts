@@ -3,10 +3,11 @@
 import { HOST, PORT, PROTOCOL_VERSION, type ClientMessage, type ServerMessage } from "../../../plugin/venchrome/protocol.ts";
 
 export const RECONNECT_ALARM = "venchrome-reconnect";
-/** Minutes. Chrome's minimum alarm delay is 0.5 min, so never more than one attempt per ~30 s. */
+/** Minutes. Chrome's minimum alarm delay is 0.5 min: the fallback when the worker sleeps. */
 const BACKOFF = [0.5, 1, 2];
-const MIN_GAP_MS = 30_000;
-const KEEPALIVE_MS = 20_000;
+/** While awake (keepalive tick), retry this often (D-019). */
+const MIN_GAP_MS = 5_000;
+const KEEPALIVE_MS = 5_000;
 
 export interface ConnectionOptions {
     url?: string;
@@ -14,7 +15,7 @@ export interface ConnectionOptions {
     onHello(): void;
     /** Connected state changed (true only after hello). */
     onState?(connected: boolean): void;
-    /** Every 20 s while keepalive is on (liveness checks piggyback on it). */
+    /** Every 5 s while keepalive is on (liveness checks piggyback on it). */
     onTick?(): void;
 }
 
@@ -40,7 +41,7 @@ export function createConnection(opts: ConnectionOptions) {
         void chrome.alarms.create(RECONNECT_ALARM, { delayInMinutes });
     };
 
-    /** Open the socket if needed. `force` (alarm) skips the 30 s gap between attempts. */
+    /** Open the socket if needed. `force` (alarm) skips the gap between attempts. */
     function ensure(force = false) {
         if (ws) return;
         if (!force && Date.now() - lastAttempt < MIN_GAP_MS) return;

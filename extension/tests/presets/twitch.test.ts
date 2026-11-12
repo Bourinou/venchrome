@@ -17,6 +17,11 @@ describe("twitch preset", () => {
         const p = presenceFor(twitch, "twitch/live.html", "https://www.twitch.tv/somestreamer");
         expect(p).toMatchObject({ details: "Chill stream !discord", state: "Somestreamer — Just Chatting" });
     });
+    it("live: channel avatar as large image, not a sidebar one; Twitch logo small", () => {
+        const p = presenceFor(twitch, "twitch/live.html", "https://www.twitch.tv/somestreamer")!;
+        expect(p.largeImage).toBe("https://static-cdn.jtvnw.net/avatar.png");
+        expect(p.smallImage).toBe(twitch.logo);
+    });
     it("VOD: progress and channel button", () => {
         const p = presenceFor(twitch, "twitch/vod.html", "https://www.twitch.tv/videos/123456",
             playing(100, 5000, { title: "Chill stream !discord", artist: "Somestreamer" }));

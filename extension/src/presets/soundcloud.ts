@@ -9,7 +9,7 @@ const rule: Rule = {
     enabled: true,
     hosts: ["soundcloud"],
     activityType: 2,
-    logo: "https://a-v2.sndcdn.com/assets/images/sc-icons/favicon-2cadd14bdb.ico",
+    logo: "https://www.google.com/s2/favicons?domain=soundcloud.com&sz=128",
     domMedia: {
         pausedSelector: ".playControls__play:not(.playing)",
         progressSelector: ".playbackTimeline__progressWrapper",
@@ -20,6 +20,7 @@ const rule: Rule = {
         title: { from: "selector", selector: `${BADGE}__titleLink`, attr: "title" },
         artist: { from: "selector", selector: `${BADGE}__lightLink`, attr: "title" },
         path: { from: "selector", selector: `${BADGE}__titleLink`, attr: "href" },
+        album: { from: "mediaSession", key: "album" },
         cover: { from: "mediaSession", key: "artwork" }
     },
     pages: [
@@ -28,7 +29,7 @@ const rule: Rule = {
             details: "{title}",
             state: "{artist}",
             largeImage: "{cover}",
-            largeText: "{title}",
+            largeText: "{album}",
             button: { label: "Listen on SoundCloud", url: "https://soundcloud.com{path}" },
             media: true
         }

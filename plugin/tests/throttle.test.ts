@@ -16,6 +16,21 @@ it("sends the first value immediately (leading)", () => {
     expect(sent).toEqual(["a"]);
 });
 
+it("settle: a burst before the leading send only sends its end (D-017)", () => {
+    const sent: unknown[] = [];
+    const t = createThrottle<unknown>(v => sent.push(v), 5_000, undefined, 1_500);
+    t.push("paused");
+    t.push("playing");
+    expect(sent).toEqual([]);
+    vi.advanceTimersByTime(1_500);
+    expect(sent).toEqual(["playing"]);
+    t.push("x");
+    vi.advanceTimersByTime(4_999);
+    expect(sent).toEqual(["playing"]);
+    vi.advanceTimersByTime(1);
+    expect(sent).toEqual(["playing", "x"]);
+});
+
 it("sends only the last value at the end of the window (trailing)", () => {
     const { sent, t } = setup();
     t.push("a");

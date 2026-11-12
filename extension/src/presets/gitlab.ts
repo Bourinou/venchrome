@@ -11,9 +11,9 @@ const preset: Rule = {
     id: "gitlab",
     name: "GitLab",
     enabled: true,
-    hosts: ["gitlab"],
+    hosts: ["gitlab*"],
     activityType: 0,
-    logo: "https://gitlab.com/favicon.ico",
+    logo: "https://www.google.com/s2/favicons?domain=gitlab.com&sz=128",
     fields: {
         vis: { from: "selector", selector: ".visibility-icon", attr: "title" },
         project: { from: "selector", selector: "body", attr: "data-project-full-path" }

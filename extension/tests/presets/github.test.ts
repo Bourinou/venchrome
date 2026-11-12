@@ -34,4 +34,13 @@ describe("github preset", () => {
     it("home", () => {
         expect(at("home", "/").details).toBe("Browsing GitHub");
     });
+    it("user profile", () => {
+        const p = at("home", "/octocat");
+        expect(p.details).toBe("Viewing a profile");
+        expect(p.state).toBe("octocat");
+        expect(p.buttons).toEqual([{ label: "View on GitHub", url: "https://github.com/octocat" }]);
+    });
+    it("reserved top-level pages are not profiles", () => {
+        for (const path of ["/settings", "/notifications", "/explore?x=1"]) expect(at("home", path).details).toBe("Browsing GitHub");
+    });
 });

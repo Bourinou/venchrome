@@ -2,7 +2,17 @@ import type { PresencePayload } from "../../../plugin/venchrome/protocol.ts";
 import { renderTemplate } from "./template.ts";
 import type { Fields, MediaSnapshot, Rule, RulePage } from "./types.ts";
 
-const isHttpUrl = (s: string | undefined): s is string => !!s && /^https?:\/\//i.test(s);
+/** Seconds → "m:ss" / "h:mm:ss"; "" when not a finite positive number. */
+export function clock(sec: number): string {
+    if (!Number.isFinite(sec) || sec <= 0) return "";
+    const s = Math.floor(sec);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    return h ? `${h}:${pad(m)}:${pad(s % 60)}` : `${m}:${pad(s % 60)}`;
+}
+
+const isHttpUrl =(s: string | undefined): s is string => !!s && /^https?:\/\//i.test(s);
 
 /**
  * Payload for Discord, or null when there is no page.
@@ -15,7 +25,8 @@ export function buildPresence(
     page: RulePage | undefined,
     fields: Fields,
     media?: MediaSnapshot,
-    now = Date.now()
+    now = Date.now(),
+    since?: number
 ): PresencePayload | null {
     if (!page) return null;
     const p: PresencePayload = { name: rule.name, type: rule.activityType };
@@ -38,7 +49,9 @@ export function buildPresence(
     if (page.media && media) {
         if (media.paused) {
             p.smallImage = "pause";
-            p.smallText = "Paused";
+            const pos = clock(media.currentTime);
+            const dur = clock(media.duration);
+            p.smallText = pos ? `Paused at ${pos}${dur ? ` / ${dur}` : ""}` : "Paused";
         } else {
             const pos = Number.isFinite(media.currentTime) ? media.currentTime : 0;
             p.startTimestamp = Math.round(now - pos * 1000);
@@ -46,6 +59,10 @@ export function buildPresence(
                 p.endTimestamp = Math.round(p.startTimestamp + media.duration * 1000);
         }
     }
+
+    // No media timing: a fixed start, else Discord shows a timer reset on every update (D-016).
+    // Paused: no timer at all, just the pause icon (D-018).
+    if (!p.startTimestamp && since && !(page.media && media?.paused)) p.startTimestamp = since;
 
     if (page.button) {
         const label = renderTemplate(page.button.label, fields);

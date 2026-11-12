@@ -21,6 +21,13 @@ describe("matchHost", () => {
         expect(matchHost("user.github.io", "github.com")).toBe(false);
         expect(matchHost("gist.github.com", "github.com")).toBe(true);
     });
+    it("matches a label prefix with a trailing *", () => {
+        expect(matchHost("gitlab.com", "gitlab*")).toBe(true);
+        expect(matchHost("gitlabinfo.iutmontp.univ-montp2.fr", "gitlab*")).toBe(true);
+        expect(matchHost("example.gitlab", "gitlab*")).toBe(false);
+        expect(matchHost("mygitlab.com", "gitlab*")).toBe(false);
+        expect(matchHost("example.com", "*")).toBe(false);
+    });
     it("is case-insensitive", () => {
         expect(matchHost("WWW.YouTube.COM", "youtube")).toBe(true);
     });

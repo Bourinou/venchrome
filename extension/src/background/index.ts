@@ -7,8 +7,12 @@ import { createConnection, RECONNECT_ALARM } from "./connection.ts";
 import { loadSession, saveSession, updateCandidates } from "./state.ts";
 
 const TICK_ALARM = "venchrome-tick";
-/** D-006: driver tab without `alive` for this long ⇒ removed. */
-const ALIVE_TIMEOUT_MS = 30_000;
+/** D-006: driver tab without `alive` for this long ⇒ removed. Ticks are 30 s apart (alarm minimum),
+ *  so allow one missed answer (D-016). */
+const ALIVE_TIMEOUT_MS = 65_000;
+/** D-017: a tab that left the site keeps the presence this long unless another tab takes over.
+ *  Checked on the 30 s tick, so it lasts 30–60 s. */
+const GONE_GRACE_MS = 30_000;
 
 const conn = createConnection({
     onHello: () => void saveSession({ sent: null }).then(sync),
@@ -42,19 +46,49 @@ async function remove(tabId: number) {
     if (had) await sync();
 }
 
-/** Ping the driver tab, drop it if silent for 30 s (D-006). */
+/** Tab left the site: keep its presence as a fallback for GONE_GRACE_MS (D-017). */
+async function leave(tabId: number) {
+    let had = false;
+    await updateCandidates(c => {
+        const cur = c[tabId];
+        if (!cur || cur.goneAt) return;
+        had = true;
+        cur.goneAt = Date.now();
+        cur.playing = false;
+    });
+    if (had) await sync();
+}
+
+/** Drop expired gone tabs, ping the driver tab, drop it if silent (D-006). */
 async function tick() {
     conn.ensure();
+    const now = Date.now();
+    let expired = false;
+    await updateCandidates(c => {
+        for (const [id, cand] of Object.entries(c))
+            if (cand.goneAt && now - cand.goneAt >= GONE_GRACE_MS) {
+                delete c[Number(id)];
+                expired = true;
+            }
+    });
+    if (expired) await sync();
     const { candidates } = await loadSession();
     const driver = pickDriver(Object.values(candidates));
-    if (!driver) return;
+    if (!driver || driver.goneAt) return;
     if (Date.now() - driver.aliveAt > ALIVE_TIMEOUT_MS) return remove(driver.tabId);
-    chrome.tabs.sendMessage(driver.tabId, { type: "ping" } satisfies WorkerToContent).catch(() => remove(driver.tabId));
+    // The content script answers through sendResponse, not runtime.sendMessage: record it here.
+    const tab = { id: driver.tabId } as chrome.tabs.Tab;
+    chrome.tabs
+        .sendMessage(driver.tabId, { type: "ping" } satisfies WorkerToContent)
+        .then(
+            (r: ContentToWorker | undefined) => (r?.type === "alive" ? onContent(r, tab) : undefined),
+            () => remove(driver.tabId)
+        );
 }
 
 async function onContent(msg: ContentToWorker, tab: chrome.tabs.Tab) {
     const tabId = tab.id!;
-    if (msg.type === "gone") return remove(tabId);
+    if (msg.type === "gone") return leave(tabId);
     const now = Date.now();
     await updateCandidates(c => {
         const cur = c[tabId];
@@ -124,12 +158,12 @@ chrome.windows.onFocusChanged.addListener(async windowId => {
     const [tab] = await chrome.tabs.query({ active: true, windowId });
     if (tab?.id !== undefined) void focus(tab.id);
 });
-chrome.tabs.onRemoved.addListener(tabId => void remove(tabId));
+chrome.tabs.onRemoved.addListener(tabId => void leave(tabId));
 // Navigation to a site without rule: the content script exits silently (D-008), so check here.
 chrome.tabs.onUpdated.addListener(async (tabId, info) => {
     if (!info.url) return;
     const host = URL.canParse(info.url) ? new URL(info.url).hostname : "";
-    if (!findRule(await getRules(), host)) void remove(tabId);
+    if (!findRule(await getRules(), host)) void leave(tabId);
 });
 chrome.alarms.onAlarm.addListener(a => {
     if (a.name === RECONNECT_ALARM) conn.ensure(true);

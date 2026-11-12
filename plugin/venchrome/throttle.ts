@@ -10,7 +10,9 @@ export interface Throttle<T> {
 export function createThrottle<T>(
     send: (value: T) => void,
     intervalMs: number,
-    equals: (a: T, b: T) => boolean = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+    equals: (a: T, b: T) => boolean = (a, b) => JSON.stringify(a) === JSON.stringify(b),
+    /** Wait this long before a leading send, so a quick burst (paused → playing on load) sends only its end. */
+    settleMs = 0
 ): Throttle<T> {
     let last: { value: T } | undefined;
     let pending: { value: T } | undefined;
@@ -38,7 +40,9 @@ export function createThrottle<T>(
                 return;
             }
             if (last && equals(last.value, value)) return;
-            emit(value);
+            if (!settleMs) return emit(value);
+            pending = { value };
+            timer = setTimeout(flush, settleMs);
         },
         cancel() {
             if (timer) clearTimeout(timer);

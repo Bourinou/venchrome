@@ -7,7 +7,7 @@ const preset: Rule = {
     enabled: true,
     hosts: ["claude.ai"],
     activityType: 0,
-    logo: "https://claude.ai/favicon.ico",
+    logo: "https://www.google.com/s2/favicons?domain=claude.ai&sz=128",
     fields: {},
     pages: [{ details: "Chatting with Claude" }]
 };

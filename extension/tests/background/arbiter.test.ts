@@ -16,6 +16,11 @@ describe("pickDriver", () => {
         const all = [c(1, 10), c(2, 20)];
         expect(pickDriver(all.filter(x => x.tabId !== 2))?.tabId).toBe(1);
     });
+    it("a gone tab is only a fallback (D-017)", () => {
+        const gone = { ...c(2, 99), goneAt: 1 };
+        expect(pickDriver([c(1, 10), gone])?.tabId).toBe(1);
+        expect(pickDriver([gone])?.tabId).toBe(2);
+    });
     it("equal focus: higher tabId wins regardless of order", () => {
         expect(pickDriver([c(1, 10), c(2, 10)])?.tabId).toBe(2);
         expect(pickDriver([c(2, 10), c(1, 10)])?.tabId).toBe(2);

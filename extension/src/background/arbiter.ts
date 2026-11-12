@@ -11,15 +11,18 @@ export interface Candidate {
     focusedAt: number;
     /** ms epoch of the last sign of life (`update` / `alive`), D-006. */
     aliveAt: number;
+    /** ms epoch the tab left the site (closed, navigated, gone): kept as a fallback for a grace period (D-017). */
+    goneAt?: number;
 }
 
 /** Most recent focus wins; ties broken by the higher tabId (deterministic). */
 const newer = (a: Candidate, b: Candidate) => a.focusedAt - b.focusedAt || a.tabId - b.tabId;
 
-/** D-005: a playing tab wins, otherwise the most recently focused one. */
+/** D-005: a playing tab wins, otherwise the most recently focused one; a gone tab only if nothing else (D-017). */
 export function pickDriver(candidates: Candidate[]): Candidate | null {
-    const playing = candidates.filter(c => c.playing);
-    const pool = playing.length ? playing : candidates;
+    const here = candidates.filter(c => !c.goneAt);
+    const playing = here.filter(c => c.playing);
+    const pool = playing.length ? playing : here.length ? here : candidates;
     return pool.reduce<Candidate | null>((best, c) => (!best || newer(c, best) > 0 ? c : best), null);
 }
 

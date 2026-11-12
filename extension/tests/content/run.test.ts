@@ -86,7 +86,8 @@ describe("content runner", () => {
         const paused = sent.at(-1) as Extract<ContentToWorker, { type: "update" }>;
         expect(paused.playing).toBe(false);
         expect(paused.presence.smallImage).toBe("pause");
-        expect(paused.presence.startTimestamp).toBeUndefined();
+        expect(paused.presence.startTimestamp).toBeUndefined(); // D-018: no timer while paused
+        expect(paused.presence.endTimestamp).toBeUndefined();
     });
 
     it("pagehide sends gone, ping answers alive", () => {

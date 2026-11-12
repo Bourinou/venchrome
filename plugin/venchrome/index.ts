@@ -8,7 +8,8 @@ import { createThrottle } from "./throttle";
 
 const Native = VencordNative.pluginHelpers.Venchrome as PluginNative<typeof import("./native")>;
 
-const THROTTLE_MS = 15_000; // D-011
+const THROTTLE_MS = 5_000; // D-016 (was 15 s, D-011)
+const SETTLE_MS = 1_500; // D-017: absorbs paused → playing on page load
 const SOCKET_ID = "Venchrome";
 
 const settings = definePluginSettings({
@@ -45,7 +46,7 @@ async function show(update: RendererUpdate) {
 
 const throttle = createThrottle<RendererUpdate>(u => {
     show(u).catch(err => console.error("[Venchrome]", err));
-}, THROTTLE_MS);
+}, THROTTLE_MS, undefined, SETTLE_MS);
 
 export default definePlugin({
     name: "Venchrome",

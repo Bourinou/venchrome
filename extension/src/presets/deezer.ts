@@ -7,7 +7,7 @@ const rule: Rule = {
     enabled: true,
     hosts: ["deezer"],
     activityType: 2,
-    logo: "https://e-cdns-files.dzcdn.net/cache/images/common/favicon/favicon-32x32.png",
+    logo: "https://www.google.com/s2/favicons?domain=deezer.com&sz=128",
     domMedia: {
         pausedSelector: "[data-testid=play_button_play]",
         progressSelector: "[data-testid=progress_bar]",
@@ -17,7 +17,8 @@ const rule: Rule = {
     fields: {
         title: { from: "mediaSession", key: "title" },
         artist: { from: "mediaSession", key: "artist" },
-        cover: { from: "mediaSession", key: "artwork" },
+        album: { from: "mediaSession", key: "album" },
+        cover:{ from: "mediaSession", key: "artwork" },
         domTitle: { from: "selector", selector: "[data-testid=miniplayer_container] [data-testid=item_title]" },
         domCover: { from: "selector", selector: "[data-testid=miniplayer_container] [data-testid=item_cover] img", attr: "src" }
     },
@@ -27,7 +28,7 @@ const rule: Rule = {
             details: "{title}",
             state: "{artist}",
             largeImage: "{cover|domCover}",
-            largeText: "{title}",
+            largeText: "{album}",
             media: true
         },
         {

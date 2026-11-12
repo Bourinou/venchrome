@@ -7,7 +7,7 @@ const youtube: Rule = {
     enabled: true,
     hosts: ["youtube"],
     activityType: 3,
-    logo: "https://www.youtube.com/favicon.ico",
+    logo: "https://www.google.com/s2/favicons?domain=youtube.com&sz=128",
     fields: {
         videoId: { from: "url", regex: "(?:[?&]v=|/shorts/|/live/)([\\w-]{11})" },
         msTitle: { from: "mediaSession", key: "title" },

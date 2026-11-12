@@ -55,6 +55,9 @@ export function createRunner(win: Window, send: (m: ContentToWorker) => void): C
     let timer: ReturnType<typeof setTimeout> | undefined;
     let lastUrl = win.location.href;
     let stopped = false;
+    /** Page start (reset on URL change): fixed start when there is no media timing. */
+    let sinceUrl = "";
+    let since = 0;
     const observer = new MutationObserver(() => schedule());
 
     const schedule = () => {
@@ -124,10 +127,14 @@ export function createRunner(win: Window, send: (m: ContentToWorker) => void): C
     function evaluate(r: Rule) {
         requestSession();
         const href = win.location.href;
+        if (href !== sinceUrl) {
+            sinceUrl = href;
+            since = Date.now();
+        }
         const snap = (!media && domMediaSnapshot(r.domMedia, doc, session)) || mediaSnapshot(media, session);
         const fields = extractFields(r, doc, href, snap);
         const page = pickPage(r, win.location.pathname, fields);
-        return { fields, page, snap, presence: buildPresence(r, page, fields, snap) };
+        return { fields, page, snap, presence: buildPresence(r, page, fields, snap, Date.now(), since) };
     }
 
     function recompute() {

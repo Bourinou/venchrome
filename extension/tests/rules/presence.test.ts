@@ -39,6 +39,15 @@ describe("buildPresence", () => {
         expect(p.endTimestamp).toBeUndefined();
         expect(p.smallImage).toBe("pause");
     });
+    it("paused: frozen position in smallText, no timer even with `since` (D-018)", () => {
+        const p = buildPresence(rule, page, fields, media({ paused: true, currentTime: 83, duration: 3725 }), NOW, NOW - 5000)!;
+        expect(p.smallText).toBe("Paused at 1:23 / 1:02:05");
+        expect(p.startTimestamp).toBeUndefined();
+        expect(p.endTimestamp).toBeUndefined();
+    });
+    it("no media timing: fixed start from `since`", () => {
+        expect(buildPresence(rule, { details: "x" }, fields, undefined, NOW, NOW - 1)!.startTimestamp).toBe(NOW - 1);
+    });
     it("ignores media when the page does not use it", () => {
         const p = buildPresence(rule, { details: "x" }, fields, media({ paused: true }), NOW)!;
         expect(p.smallImage).toBeUndefined();
