@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
-import { toActivity } from "../venchrome/activity";
+import { contentChanged, toActivity } from "../venchrome/activity";
+import type { PresencePayload } from "../venchrome/protocol";
 
 it("maps a minimal payload without optional fields", () => {
     expect(toActivity({ name: "YouTube", type: 3 }, "123")).toEqual({
@@ -32,4 +33,11 @@ it("drops incomplete buttons", () => {
     const a = toActivity({ name: "x", type: 0, buttons: [{ label: "", url: "https://x" }] }, "1");
     expect(a.buttons).toBeUndefined();
     expect(a.metadata).toBeUndefined();
+});
+
+it("contentChanged: title/state/site or clear, not timing (D-023)", () => {
+    const p = { name: "Deezer", type: 2, details: "A", state: "X", startTimestamp: 1 } as PresencePayload;
+    expect(contentChanged(p, { ...p, startTimestamp: 2, smallText: "Paused" })).toBe(false);
+    expect(contentChanged(p, { ...p, details: "B" })).toBe(true);
+    expect(contentChanged(p, null)).toBe(true);
 });

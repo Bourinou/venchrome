@@ -46,3 +46,8 @@ export function toActivity(p: PresencePayload, appId: string): DiscordActivity {
     }
     return activity;
 }
+
+/** New track/page/site or a clear (not just timing or play state): sent ~1 s after it settles (D-023). */
+export function contentChanged(a: PresencePayload | null, b: PresencePayload | null) {
+    return !a || !b || a.name !== b.name || a.details !== b.details || a.state !== b.state;
+}

@@ -12,7 +12,9 @@ export function createThrottle<T>(
     intervalMs: number,
     equals: (a: T, b: T) => boolean = (a, b) => JSON.stringify(a) === JSON.stringify(b),
     /** Wait this long before a leading send, so a quick burst (paused → playing on load) sends only its end. */
-    settleMs = 0
+    settleMs = 0,
+    /** A change this returns true for (e.g. a new track) skips the rest of the window: it goes out settleMs after its last push (D-023). */
+    urgent: (prev: T, next: T) => boolean = () => false
 ): Throttle<T> {
     let last: { value: T } | undefined;
     let pending: { value: T } | undefined;
@@ -37,6 +39,10 @@ export function createThrottle<T>(
         push(value) {
             if (timer) {
                 pending = { value };
+                if (settleMs && last && urgent(last.value, value)) {
+                    clearTimeout(timer);
+                    timer = setTimeout(flush, settleMs);
+                }
                 return;
             }
             if (last && equals(last.value, value)) return;

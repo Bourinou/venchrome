@@ -87,3 +87,25 @@ it("handles null (clear) like any value", () => {
     vi.advanceTimersByTime(15_000);
     expect(sent).toEqual(["a", null]);
 });
+
+it("urgent change skips the rest of the window, sent settleMs after its last push (D-023)", () => {
+    const sent: string[] = [];
+    const t = createThrottle<string>(v => sent.push(v), 5_000, undefined, 1_000, (a, b) => a[0] !== b[0]);
+    t.push("a1");
+    vi.advanceTimersByTime(1_000);
+    expect(sent).toEqual(["a1"]);
+    t.push("a2"); // same content, timing only: waits for the window
+    vi.advanceTimersByTime(500);
+    t.push("b1"); // new track 1.5 s after the send
+    vi.advanceTimersByTime(300);
+    t.push("b2"); // burst restarts the settle
+    vi.advanceTimersByTime(999);
+    expect(sent).toEqual(["a1"]);
+    vi.advanceTimersByTime(1);
+    expect(sent).toEqual(["a1", "b2"]);
+    t.push("b3"); // non-urgent: back to the 5 s window
+    vi.advanceTimersByTime(4_999);
+    expect(sent).toEqual(["a1", "b2"]);
+    vi.advanceTimersByTime(1);
+    expect(sent).toEqual(["a1", "b2", "b3"]);
+});
