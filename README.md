@@ -16,13 +16,13 @@ Personal project, not published.
 
 ### 1. Vencord plugin
 
-The Vencord checkout and updater live in the separate private repo `vencord-installer`. Venchrome ships a hook that links `plugin/venchrome` into the checkout as `src/userplugins/venchrome`. Link it once into the installer's `hooks/` folder (see its `hooks/README.md`):
+The Vencord checkout and updater live in the separate private repo `vencord-installer`. Venchrome ships a hook that links `plugin/venchrome` into the checkout as `src/userplugins/venchrome`. Register the hook once (finds `..encord-installer`, or pass its path / set `VENCORD_INSTALLER_DIR`):
 
 ```powershell
-New-Item -ItemType SymbolicLink -Path ..\vencord-installer\hooks\50-venchrome.mjs -Target ..\Venchrome\vencord-hook\50-venchrome.mjs
+node vencord-hook/install-hook.mjs
 ```
 
-(Needs Developer Mode or an elevated shell. Otherwise copy the file and set `VENCHROME_DIR` to this repo.) Then rebuild and inject Vencord:
+(It symlinks the hook into the installer's `hooks/`; without Developer Mode it copies it and you must set `VENCHROME_DIR` to this repo.) Then rebuild and inject Vencord:
 
 ```powershell
 & "..\vencord-installer\update-vencord.ps1"
