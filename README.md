@@ -2,7 +2,7 @@
 
 Shows what you do on chosen websites as a Discord Rich Presence: a Chrome extension (MV3) talks to a Vencord userplugin over a local WebSocket (`127.0.0.1:28463`). No subscription, no background app, no Discord token.
 
-Built-in sites: YouTube, Twitch, GitHub, GitLab (including self-hosted `gitlab*` hosts), Deezer, SoundCloud, anime-sama, claude.ai.
+Built-in sites: YouTube, Twitch, GitHub, GitLab (including self-hosted `gitlab*` hosts), Deezer, SoundCloud, anime-sama, claude.ai, BigBlueButton (`bbb*` hosts, `/html5client`).
 
 Personal project, not published.
 
