@@ -11,6 +11,12 @@ describe("bbb preset", () => {
         expect(JSON.stringify(p)).not.toMatch(/secret|alice|dupont|abc/i);
     });
 
+    it("uses the BBB logo as large image", () => {
+        const p = presenceFor(bbb, "bbb/meeting.html", "https://bbb.example.org/html5client/join")!;
+        expect(bbb.logo).toMatch(/^https:\/\//);
+        expect(p.largeImage).toBe(bbb.logo);
+    });
+
     it("only presents on /html5client", () => {
         expect(presenceFor(bbb, "bbb/meeting.html", "https://bbb.example.org/b/room-x")).toBeNull();
     });
