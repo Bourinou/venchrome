@@ -16,10 +16,16 @@ Personal project, not published.
 
 ### 1. Vencord plugin
 
-`plugin/venchrome` is linked into the Vencord checkout as `src/userplugins/venchrome` (junction). Rebuild and inject Vencord:
+The Vencord checkout and updater live in the separate private repo `vencord-installer`. Venchrome ships a hook that links `plugin/venchrome` into the checkout as `src/userplugins/venchrome`. Link it once into the installer's `hooks/` folder (see its `hooks/README.md`):
 
 ```powershell
-& "..\Vencord Installation\update-vencord.ps1"
+New-Item -ItemType SymbolicLink -Path ..\vencord-installer\hooks\50-venchrome.mjs -Target ..\Venchrome\vencord-hook\50-venchrome.mjs
+```
+
+(Needs Developer Mode or an elevated shell. Otherwise copy the file and set `VENCHROME_DIR` to this repo.) Then rebuild and inject Vencord:
+
+```powershell
+& "..\vencord-installer\update-vencord.ps1"
 ```
 
 Restart Discord, then in **Settings → Vencord → Plugins** enable **Venchrome**.
