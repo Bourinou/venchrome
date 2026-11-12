@@ -34,8 +34,7 @@ Restart Discord, then in **Settings → Vencord → Plugins** enable **Venchrome
 
 The presence uses one Discord application (shown as the activity owner, assets `pause` and `play`).
 
-- Use the existing app ID `1570214212830232656`, or create your own on the [Developer Portal](https://discord.com/developers/applications) and upload `assets/pause.png` and `assets/play.png` as Rich Presence art assets with the keys `pause` and `play`.
-- Paste the ID into the plugin setting **appId**.
+- The plugin defaults to the app ID `1570214212830232656`: no configuration needed. To use your own app instead, create your own on the [Developer Portal](https://discord.com/developers/applications) and upload `assets/pause.png` and `assets/play.png` as Rich Presence art assets with the keys `pause` and `play`, then paste its ID into the optional plugin setting **appId** (an empty field falls back to the default).
 
 ### 3. Chrome extension
 
@@ -94,7 +93,7 @@ Sentence to give an AI: *"Write a Venchrome rule as JSON following `extension/ex
 | Symptom | Fix |
 |---|---|
 | Popup says disconnected | Discord not running or plugin disabled; the extension retries every 5 s while a tracked site is open (else ~30 s). |
-| Nothing on the profile | Check the plugin **appId**; check the site has an enabled rule; wait 5 s. |
+| Nothing on the profile | Check the plugin **appId** (leave empty for the default); check the site has an enabled rule; wait 5 s. |
 | `Failed to fetch dynamically imported module` in a page console | The extension was rebuilt: reload it, then reload the tab. |
 | Another activity hides yours | Close other presence tools (PreMiD…) and restart Discord. |
 | A timer shows while paused | Discord adds its own timer when no timestamps are sent; it cannot be hidden. |

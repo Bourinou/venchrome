@@ -11,12 +11,13 @@ const Native = VencordNative.pluginHelpers.Venchrome as PluginNative<typeof impo
 const THROTTLE_MS = 5_000; // D-016 (was 15 s, D-011)
 const SETTLE_MS = 1_500; // D-017: absorbs paused → playing on page load
 const SOCKET_ID = "Venchrome";
+const DEFAULT_APP_ID = "1570214212830232656"; // D-022 (public ID, amends D-004/D-015)
 
 const settings = definePluginSettings({
     appId: {
         type: OptionType.STRING,
-        description: "Discord application ID used for the presence (required)",
-        default: ""
+        description: "Discord application ID used for the presence (optional override)",
+        default: DEFAULT_APP_ID
     }
 });
 
@@ -31,11 +32,7 @@ async function resolveAsset(appId: string, image: string | undefined) {
 
 async function show(update: RendererUpdate) {
     if (!update) return dispatch(null);
-    const { appId } = settings.store;
-    if (!appId) {
-        console.warn("[Venchrome] No appId set in plugin settings: presence not shown.");
-        return;
-    }
+    const appId = settings.store.appId?.trim() || DEFAULT_APP_ID;
     const activity = toActivity(update, appId);
     if (activity.assets) {
         activity.assets.large_image = await resolveAsset(appId, activity.assets.large_image);
