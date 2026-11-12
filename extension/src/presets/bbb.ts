@@ -9,7 +9,7 @@ const preset: Rule = {
     enabled: true,
     hosts: ["bbb*"],
     activityType: 0,
-    logo: "https://bigbluebutton.org/wp-content/uploads/2021/03/favicon.png",
+    logo: "https://bigbluebutton.org/wp-content/uploads/2021/01/BigBlueButton_icon.svg.png",
     fields: {},
     pages: [{ path: "^/html5client", details: "In a BigBlueButton meeting" }]
 };

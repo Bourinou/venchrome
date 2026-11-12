@@ -16,7 +16,7 @@ const preset: Rule = {
     enabled: true,
     hosts: ["github.com"],
     activityType: 0,
-    logo: "https://www.google.com/s2/favicons?domain=github.com&sz=128",
+    logo: "https://github.com/fluidicon.png",
     fields: {
         pub: { from: "meta", name: "octolytics-dimension-repository_public" },
         vis: { from: "selector", selector: "[data-testid=\"repo-visibility-label\"]" },
