@@ -1,3 +1,9 @@
 .tracker/
 node_modules/
 dist/
+Plans/
+Docs/
+ORCHESTRATOR.md
+PLAN.md
+CLAUDE.md
+Tools/tracker-sync.ps1
