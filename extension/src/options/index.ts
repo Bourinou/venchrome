@@ -4,6 +4,7 @@ import { presets } from "../presets/index.ts";
 import type { Rule } from "../rules/types.ts";
 import { deleteRule, getRules, loadState, saveRule } from "../storage.ts";
 import { el, presenceLines } from "../ui.ts";
+import { exportRules, parseImport } from "./importer.ts";
 import {
     MEDIA_KEYS, SOURCE_KINDS, newRuleForm, ruleFromForm, ruleToForm, validateForm,
     type CondForm, type FieldForm, type PageForm, type RuleForm
@@ -47,8 +48,38 @@ async function showList() {
         el("div", { class: "row" },
             el("div", { class: "grow" }, newDomain),
             el("button", { class: "primary", onclick: create }, "New rule")),
+        importPanel(rules),
         ...rules.map(r => ruleCard(r, rules, state.overrides))
     );
+}
+
+async function copy(text: string, btn: HTMLElement) {
+    const old = btn.textContent;
+    try { await navigator.clipboard.writeText(text); btn.textContent = "Copied!"; } catch { btn.textContent = "Copy failed"; }
+    setTimeout(() => (btn.textContent = old), 1500);
+}
+
+/** Paste or load JSON (one rule or an array); export all custom rules. Never overwrites an existing id (D-020). */
+function importPanel(rules: Rule[]) {
+    const area = el("textarea", { rows: 6, placeholder: "Paste a rule (or an array of rules) as JSON" });
+    const msg = el("div", { class: "error" });
+    const doImport = async () => {
+        const res = parseImport(area.value, rules.map(r => r.id));
+        msg.textContent = res.errors.join("\n");
+        if (res.errors.length) return;
+        for (const r of res.rules) await saveRule(r);
+        await showList();
+    };
+    const file = el("input", { type: "file", accept: ".json,application/json" });
+    file.addEventListener("change", () => void file.files?.[0]?.text().then(t => (area.value = t)));
+    const custom = rules.filter(r => !presetIds.has(r.id));
+    const exportAll = el("button", { onclick: () => void copy(exportRules(custom), exportAll) }, "Export all custom rules");
+    if (!custom.length) exportAll.setAttribute("disabled", "");
+    return el("details", { class: "card" },
+        el("summary", {}, "Import / export JSON"),
+        area, file,
+        el("div", { class: "row" }, el("button", { class: "primary", onclick: () => void doImport() }, "Import"), exportAll),
+        msg);
 }
 
 function ruleCard(r: Rule, rules: Rule[], overrides: Record<string, unknown>) {
@@ -64,6 +95,8 @@ function ruleCard(r: Rule, rules: Rule[], overrides: Record<string, unknown>) {
             }
         }, "Duplicate")
     ];
+    const exp = el("button", { onclick: () => void copy(exportRules([r]), exp) }, "Copy JSON");
+    actions.push(exp);
     if (isPreset && overrides[r.id]) actions.push(el("button", { onclick: () => void deleteRule(r.id).then(showList) }, "Reset"));
     if (!isPreset) actions.push(el("button", { class: "danger", onclick: () => void deleteRule(r.id).then(showList) }, "Delete"));
     return el("div", { class: "card row" },

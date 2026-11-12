@@ -59,6 +59,30 @@ Open the extension **options** page → add a rule. No rebuild needed.
 - **Fields** read values from the page (CSS selector, meta tag, URL regex, title, media session); **pages** pick a text template per URL path and conditions, e.g. `{title} — {artist}`.
 - The live preview evaluates the rule on the current tab.
 
+## Custom rules via JSON
+
+Options page → **Import / export JSON**: paste (or load) one rule or an array of rules, then **Import**. Each rule has **Copy JSON**; **Export all custom rules** copies them all. Import is all-or-nothing and never overwrites: an `id` already used (built-in preset or existing rule) is refused. Input is treated as data only; unknown keys are ignored.
+
+Ready-made model: [`extension/examples/rule.example.json`](extension/examples/rule.example.json) (a test checks it stays valid). Fields:
+
+| Key | Meaning |
+|---|---|
+| `id` | Unique, never a preset id. |
+| `name` | Activity name shown on Discord. |
+| `enabled` | `true`/`false` (default `true`). |
+| `hosts` | Host names: `claude.ai` = host + subdomains; `anime-sama` (no dot) = any TLD; `gitlab*` = label prefix. |
+| `activityType` | `0` Playing, `2` Listening, `3` Watching. |
+| `logo` | Optional https image URL. |
+| `fields` | Named values read from the page. `from`: `selector` (`selector`, optional `attr`), `meta` (`name`), `title` / `url` (`regex`, optional `group`, default 1), `mediaSession` (`key`: title, artist, album, artwork). |
+| `domMedia` | Optional, for players with no `<audio>/<video>`: `pausedSelector` (element present = paused), `progressSelector`, `currentAttr` / `maxAttr` (attributes holding elapsed/total seconds). Used only when the page has no media element. |
+| `pages` | Ordered; the first whose `path` (regex on pathname, optional) and `when` pass wins. |
+| `pages[].when` | Conditions `{field, exists}` or `{field, matches}` (regex); all must pass. |
+| `pages[].details/state/largeImage/largeText` | Templates: `{field}`, fallback `{a|b}`; built-ins `{url}`, `{host}`, `{title}`. |
+| `pages[].button` | `{label, url}`; url must render to https. |
+| `pages[].media` | `true` = use media state (timestamps, pause icon). |
+
+Sentence to give an AI: *"Write a Venchrome rule as JSON following `extension/examples/rule.example.json` for <site>: show <what> on Discord. Output only the JSON, check the CSS selectors against the page's real HTML."*
+
 ## Troubleshooting
 
 | Symptom | Fix |

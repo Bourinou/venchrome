@@ -1,0 +1,34 @@
+{
+    "id": "example-blog",
+    "name": "Example Blog",
+    "enabled": true,
+    "hosts": ["example-blog", "blog.example.org"],
+    "activityType": 3,
+    "logo": "https://www.google.com/s2/favicons?domain=example.org&sz=128",
+    "fields": {
+        "post": { "from": "title", "regex": "^(.+) \\| Example Blog$" },
+        "author": { "from": "selector", "selector": "a.author", "attr": "title" },
+        "cover": { "from": "meta", "name": "og:image" },
+        "song": { "from": "mediaSession", "key": "title" },
+        "chapter": { "from": "url", "regex": "/chapter-(\\d+)", "group": 1 }
+    },
+    "domMedia": {
+        "pausedSelector": "button.play[aria-label='Play']",
+        "progressSelector": ".timeline[role='progressbar']",
+        "currentAttr": "aria-valuenow",
+        "maxAttr": "aria-valuemax"
+    },
+    "pages": [
+        {
+            "path": "^/posts/",
+            "when": [{ "field": "post", "exists": true }],
+            "details": "{post}",
+            "state": "by {author|Unknown}",
+            "largeImage": "{cover}",
+            "largeText": "{post}",
+            "button": { "label": "Read", "url": "{url}" },
+            "media": true
+        },
+        { "details": "Browsing {host}" }
+    ]
+}
