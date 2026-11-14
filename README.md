@@ -9,36 +9,36 @@ Personal project, not published.
 ## Requirements
 
 - Vencord **desktop**, built from source (userplugins do not work on Vencord web).
-- Node.js + npm (extension). On Windows the Vencord updater installs `git` and `pnpm` itself if missing.
+- Node.js + npm.
+- The private repo `vencord-installer`, cloned next to this one (it builds Vencord, see its README).
 - Chrome (or another Chromium browser) with developer mode.
 
 ## Install
 
 ### 1. Vencord plugin
 
-The Vencord checkout and updater live in the separate private repo `vencord-installer`. Venchrome ships a hook that links `plugin/venchrome` into the checkout as `src/userplugins/venchrome`. Register the hook once (finds `../vencord-installer`, or pass its path / set `VENCORD_INSTALLER_DIR`):
+Register the Venchrome hook in `vencord-installer` once (it finds `../vencord-installer`; otherwise pass its path or set `VENCORD_INSTALLER_DIR`):
 
-```powershell
+```bash
 node vencord-hook/install-hook.mjs
 ```
 
-(It symlinks the hook into the installer's `hooks/`; without Developer Mode it copies it and you must set `VENCHROME_DIR` to this repo.) Then rebuild and inject Vencord:
+Then build and install Vencord:
 
-```powershell
-node "..\vencord-installer\update-vencord.mjs"
+```bash
+node ../vencord-installer/update-vencord.mjs   # Windows
+../vencord-installer/update-vencord.sh         # Linux
 ```
 
 Restart Discord, then in **Settings → Vencord → Plugins** enable **Venchrome**.
 
 ### 2. Discord application
 
-The presence uses one Discord application (shown as the activity owner, assets `pause` and `play`).
-
-- The plugin defaults to the app ID `1570214212830232656`: no configuration needed. To use your own app instead, create your own on the [Developer Portal](https://discord.com/developers/applications) and upload `assets/pause.png` and `assets/play.png` as Rich Presence art assets with the keys `pause` and `play`, then paste its ID into the optional plugin setting **appId** (an empty field falls back to the default).
+Nothing to do: the plugin uses a default app. To use your own, create one on the [Developer Portal](https://discord.com/developers/applications), upload `assets/pause.png` and `assets/play.png` as Rich Presence art assets named `pause` and `play`, and paste its ID into the plugin setting **appId**.
 
 ### 3. Chrome extension
 
-```powershell
+```bash
 cd extension
 npm install
 npm run build
@@ -60,7 +60,7 @@ After each rebuild: click reload on the extension card, then reload the open tab
 
 Open the extension **options** page → add a rule. No rebuild needed.
 
-- **Hosts**: `claude.ai` matches that host and its subdomains; `anime-sama` (no dot) matches that name on any TLD; `gitlab*` matches any host label starting with `gitlab`.
+- **Hosts**: see `hosts` in the table below.
 - **Fields** read values from the page (CSS selector, meta tag, URL regex, title, media session); **pages** pick a text template per URL path and conditions, e.g. `{title} — {artist}`.
 - The live preview evaluates the rule on the current tab.
 
@@ -97,11 +97,12 @@ Sentence to give an AI: *"Write a Venchrome rule as JSON following `extension/ex
 | `Failed to fetch dynamically imported module` in a page console | The extension was rebuilt: reload it, then reload the tab. |
 | Another activity hides yours | Close other presence tools (PreMiD…) and restart Discord. |
 | A timer shows while paused | Discord adds its own timer when no timestamps are sent; it cannot be hidden. |
-| Plugin gone after a Vencord update | Run `update-vencord.mjs` again. |
+| Plugin gone after a Vencord update | Run the Vencord updater again. |
+| Plugin missing after `install-hook.mjs` without Windows Developer Mode | The hook was copied, not linked: set `VENCHROME_DIR` to this repo. |
 
 ## Development
 
-```powershell
+```bash
 cd extension
 npm test        # vitest: extension/tests + plugin/tests
 npm run build   # tsc + MV3 build to extension/dist
