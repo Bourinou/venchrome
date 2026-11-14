@@ -9,7 +9,7 @@ Personal project, not published.
 ## Requirements
 
 - Vencord **desktop**, built from source (userplugins do not work on Vencord web).
-- Node.js + npm (extension), pnpm (Vencord).
+- Node.js + npm (extension). On Windows the Vencord updater installs `git` and `pnpm` itself if missing.
 - Chrome (or another Chromium browser) with developer mode.
 
 ## Install
