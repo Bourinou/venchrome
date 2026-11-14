@@ -10,7 +10,7 @@ Personal project, not published.
 
 - Vencord **desktop**, built from source (userplugins do not work on Vencord web).
 - Node.js + npm.
-- The private repo `vencord-installer`, cloned next to this one (it builds Vencord, see its README).
+- [`vencord-installer`](https://github.com/Bourinou/vencord-installer), cloned next to this repo (it builds Vencord, see its README).
 - Chrome (or another Chromium browser) with developer mode.
 
 ## Install
