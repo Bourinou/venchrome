@@ -25,7 +25,7 @@ node vencord-hook/install-hook.mjs
 (It symlinks the hook into the installer's `hooks/`; without Developer Mode it copies it and you must set `VENCHROME_DIR` to this repo.) Then rebuild and inject Vencord:
 
 ```powershell
-& "..\vencord-installer\update-vencord.ps1"
+node "..\vencord-installer\update-vencord.mjs"
 ```
 
 Restart Discord, then in **Settings → Vencord → Plugins** enable **Venchrome**.
@@ -97,7 +97,7 @@ Sentence to give an AI: *"Write a Venchrome rule as JSON following `extension/ex
 | `Failed to fetch dynamically imported module` in a page console | The extension was rebuilt: reload it, then reload the tab. |
 | Another activity hides yours | Close other presence tools (PreMiD…) and restart Discord. |
 | A timer shows while paused | Discord adds its own timer when no timestamps are sent; it cannot be hidden. |
-| Plugin gone after a Vencord update | Run `update-vencord.ps1` again. |
+| Plugin gone after a Vencord update | Run `update-vencord.mjs` again. |
 
 ## Development
 
