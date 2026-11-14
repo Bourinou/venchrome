@@ -17,7 +17,7 @@ Personal project, not published.
 
 ### 1. Vencord plugin
 
-Register the Venchrome hook in `vencord-installer` once (it finds `../vencord-installer`; otherwise pass its path or set `VENCORD_INSTALLER_DIR`):
+Register the Venchrome hook in [`vencord-installer`](https://github.com/Bourinou/vencord-installer) once (it finds `../vencord-installer`; otherwise pass its path or set `VENCORD_INSTALLER_DIR`):
 
 ```bash
 node vencord-hook/install-hook.mjs
